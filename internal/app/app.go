@@ -9,7 +9,6 @@ import (
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/infrastructure/repository/redis"
 	http2 "github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/auth/http"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/generated/auth"
-	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/generated/csat"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/generated/review"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/generated/user"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/recommendation"
@@ -38,7 +37,6 @@ import (
 	admint "github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/admin"
 	baskett "github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/basket"
 	categoryt "github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/category"
-	csatt "github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/csat/http"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/jwt"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/middleware"
 	"github.com/go-park-mail-ru/2025_1_ChillGuys/internal/transport/order"
@@ -129,17 +127,6 @@ func NewApp(conf *config.Config) (*App, error) {
 	userClient := user.NewUserServiceClient(userConn)
 
 	userHandler := usert.NewUserHandler(userClient, conf)
-
-	csatConn, err := grpc.Dial(
-		"csat-service:50053",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("csat service connection error: %w", err)
-	}
-	csatClient := csat.NewSurveyServiceClient(csatConn)
-
-	csatHandler := csatt.NewCsatHandler(csatClient)
 
 	reviewConn, err := grpc.Dial(
 		"review-service:50054",
@@ -378,33 +365,6 @@ func NewApp(conf *config.Config) (*App, error) {
 			http.HandlerFunc(addressService.GetAddress),
 		)).Methods(http.MethodGet)
 		addressRouter.HandleFunc("/pickup-points", addressService.GetPickupPoints).Methods(http.MethodGet)
-	}
-
-	csatRouter := apiRouter.PathPrefix("").Subrouter()
-	{
-		csatRouter.Handle("/csat/{name}",
-			middleware.CSRFMiddleware(tokenator,
-				middleware.JWTMiddleware(authClient, tokenator, http.HandlerFunc(csatHandler.GetSurvey)),
-				conf.CSRFConfig,
-			)).Methods(http.MethodGet)
-
-		csatRouter.Handle("/csat",
-			middleware.CSRFMiddleware(tokenator,
-				middleware.JWTMiddleware(authClient, tokenator, http.HandlerFunc(csatHandler.SubmitAnswer)),
-				conf.CSRFConfig,
-			)).Methods(http.MethodPost)
-
-		csatRouter.Handle("/survey",
-			middleware.CSRFMiddleware(tokenator,
-				middleware.JWTMiddleware(authClient, tokenator, http.HandlerFunc(csatHandler.GetAllSurveys)),
-				conf.CSRFConfig,
-			)).Methods(http.MethodGet)
-
-		csatRouter.Handle("/stat/{surveyId}",
-			middleware.CSRFMiddleware(tokenator,
-				middleware.JWTMiddleware(authClient, tokenator, http.HandlerFunc(csatHandler.GetSurveyStatistics)),
-				conf.CSRFConfig,
-			)).Methods(http.MethodGet)
 	}
 
 	reviewRouter := apiRouter.PathPrefix("/review").Subrouter()

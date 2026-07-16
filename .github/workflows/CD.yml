@@ -34,4 +34,3 @@ jobs:
           docker push ${{ env.REGISTRY }}/user-service:latest
           docker push ${{ env.REGISTRY }}/auth-service:latest
           docker push ${{ env.REGISTRY }}/review-service:latest
-          docker push ${{ env.REGISTRY }}/csat-service:latest
