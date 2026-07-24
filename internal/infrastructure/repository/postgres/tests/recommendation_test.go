@@ -126,8 +126,8 @@ func TestGetProductIDsBySubcategoryID_Success(t *testing.T) {
 		AddRow(expectedProducts[0]).
 		AddRow(expectedProducts[1])
 
-	mock.ExpectQuery("SELECT product_id FROM bazaar.product_subcategory WHERE subcategory_id = \\$1 ORDER BY RANDOM\\(\\) LIMIT 10").
-		WithArgs(subcategoryID).
+	mock.ExpectQuery("bazaar\\.product_subcategory ps").
+		WithArgs(subcategoryID, 20, 10).
 		WillReturnRows(rows)
 
 	repo := recommendation.NewRecommendationRepository(db)
@@ -149,8 +149,8 @@ func TestGetProductIDsBySubcategoryID_Empty(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"product_id"})
 
-	mock.ExpectQuery("SELECT product_id FROM bazaar.product_subcategory WHERE subcategory_id = \\$1 ORDER BY RANDOM\\(\\) LIMIT 10").
-		WithArgs(subcategoryID).
+	mock.ExpectQuery("bazaar\\.product_subcategory ps").
+		WithArgs(subcategoryID, 20, 10).
 		WillReturnRows(rows)
 
 	repo := recommendation.NewRecommendationRepository(db)
@@ -170,8 +170,8 @@ func TestGetProductIDsBySubcategoryID_DBError(t *testing.T) {
 
 	subcategoryID := uuid.New()
 
-	mock.ExpectQuery("SELECT product_id FROM bazaar.product_subcategory WHERE subcategory_id = \\$1 ORDER BY RANDOM\\(\\) LIMIT 10").
-		WithArgs(subcategoryID).
+	mock.ExpectQuery("bazaar\\.product_subcategory ps").
+		WithArgs(subcategoryID, 20, 10).
 		WillReturnError(errors.New("database error"))
 
 	repo := recommendation.NewRecommendationRepository(db)
@@ -194,8 +194,8 @@ func TestGetProductIDsBySubcategoryID_ScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"product_id"}).
 		AddRow("invalid-uuid")
 
-	mock.ExpectQuery("SELECT product_id FROM bazaar.product_subcategory WHERE subcategory_id = \\$1 ORDER BY RANDOM\\(\\) LIMIT 10").
-		WithArgs(subcategoryID).
+	mock.ExpectQuery("bazaar\\.product_subcategory ps").
+		WithArgs(subcategoryID, 20, 10).
 		WillReturnRows(rows)
 
 	repo := recommendation.NewRecommendationRepository(db)
@@ -204,4 +204,166 @@ func TestGetProductIDsBySubcategoryID_ScanError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid UUID length")
 	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetCoPurchasedProductIDs_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	productID := uuid.New()
+	expected := []uuid.UUID{uuid.New(), uuid.New()}
+
+	rows := sqlmock.NewRows([]string{"product_id"}).
+		AddRow(expected[0]).
+		AddRow(expected[1])
+
+	mock.ExpectQuery("bazaar\\.order_item oi1").
+		WithArgs(productID, 10).
+		WillReturnRows(rows)
+
+	repo := recommendation.NewRecommendationRepository(db)
+	result, err := repo.GetCoPurchasedProductIDs(context.Background(), productID, 10)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetCoPurchasedProductIDs_DBError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	productID := uuid.New()
+
+	mock.ExpectQuery("bazaar\\.order_item oi1").
+		WithArgs(productID, 10).
+		WillReturnError(errors.New("database error"))
+
+	repo := recommendation.NewRecommendationRepository(db)
+	_, err = repo.GetCoPurchasedProductIDs(context.Background(), productID, 10)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "database error")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetPreferredSubcategoryIDs_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	userID := uuid.New()
+	expected := []uuid.UUID{uuid.New(), uuid.New()}
+
+	rows := sqlmock.NewRows([]string{"subcategory_id"}).
+		AddRow(expected[0]).
+		AddRow(expected[1])
+
+	mock.ExpectQuery("GROUP BY ps\\.subcategory_id").
+		WithArgs(userID, 5).
+		WillReturnRows(rows)
+
+	repo := recommendation.NewRecommendationRepository(db)
+	result, err := repo.GetPreferredSubcategoryIDs(context.Background(), userID, 5)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetPurchasedProductIDs_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	userID := uuid.New()
+	expected := []uuid.UUID{uuid.New()}
+
+	rows := sqlmock.NewRows([]string{"product_id"}).AddRow(expected[0])
+
+	mock.ExpectQuery("SELECT DISTINCT oi\\.product_id").
+		WithArgs(userID).
+		WillReturnRows(rows)
+
+	repo := recommendation.NewRecommendationRepository(db)
+	result, err := repo.GetPurchasedProductIDs(context.Background(), userID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetPopularProductIDs_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	expected := []uuid.UUID{uuid.New(), uuid.New()}
+
+	rows := sqlmock.NewRows([]string{"id"}).
+		AddRow(expected[0]).
+		AddRow(expected[1])
+
+	mock.ExpectQuery("bazaar\\.product p\\b").
+		WithArgs(20, 20).
+		WillReturnRows(rows)
+
+	repo := recommendation.NewRecommendationRepository(db)
+	result, err := repo.GetPopularProductIDs(context.Background(), 20)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetComplementaryProductIDs_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	purchased := []uuid.UUID{uuid.New(), uuid.New()}
+	expected := []uuid.UUID{uuid.New(), uuid.New()}
+
+	rows := sqlmock.NewRows([]string{"product_id"}).
+		AddRow(expected[0]).
+		AddRow(expected[1])
+
+	mock.ExpectQuery("ANY\\(\\$1::uuid\\[\\]\\)").
+		WithArgs(sqlmock.AnyArg(), 20).
+		WillReturnRows(rows)
+
+	repo := recommendation.NewRecommendationRepository(db)
+	result, err := repo.GetComplementaryProductIDs(context.Background(), purchased, 20)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetComplementaryProductIDs_EmptyInput(t *testing.T) {
+	db, _, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open stub db: %s", err)
+	}
+	defer db.Close()
+
+	repo := recommendation.NewRecommendationRepository(db)
+	result, err := repo.GetComplementaryProductIDs(context.Background(), nil, 20)
+
+	assert.NoError(t, err)
+	assert.Nil(t, result)
 }

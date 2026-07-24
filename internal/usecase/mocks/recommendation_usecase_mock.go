@@ -50,3 +50,19 @@ func (mr *MockIRecommendationUsecaseMockRecorder) GetRecommendations(ctx, produc
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendations", reflect.TypeOf((*MockIRecommendationUsecase)(nil).GetRecommendations), ctx, productID)
 }
+
+// GetPersonalRecommendations mocks base method.
+func (m *MockIRecommendationUsecase) GetPersonalRecommendations(ctx context.Context, userID uuid.UUID) ([]*models.Product, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonalRecommendations", ctx, userID)
+	ret0, _ := ret[0].([]*models.Product)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPersonalRecommendations indicates an expected call of GetPersonalRecommendations.
+func (mr *MockIRecommendationUsecaseMockRecorder) GetPersonalRecommendations(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonalRecommendations", reflect.TypeOf((*MockIRecommendationUsecase)(nil).GetPersonalRecommendations), ctx, userID)
+}

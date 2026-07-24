@@ -515,6 +515,10 @@ func NewApp(conf *config.Config) (*App, error) {
 
 	recommendationRouter := apiRouter.PathPrefix("/recommendation").Subrouter()
 	{
+		recommendationRouter.Handle("",
+			middleware.OptionalJWTMiddleware(authClient, tokenator,
+				http.HandlerFunc(recommendationServise.GetPersonalRecommendations)),
+		).Methods(http.MethodGet)
 		recommendationRouter.HandleFunc("/{id}", recommendationServise.GetRecommendations).Methods(http.MethodGet)
 	}
 
