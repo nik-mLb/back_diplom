@@ -64,3 +64,78 @@ func (mr *MockIRecommendationRepositoryMockRecorder) GetProductIDsBySubcategoryI
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductIDsBySubcategoryID", reflect.TypeOf((*MockIRecommendationRepository)(nil).GetProductIDsBySubcategoryID), ctx, subcategoryID, count)
 }
+
+// GetCoPurchasedProductIDs mocks base method.
+func (m *MockIRecommendationRepository) GetCoPurchasedProductIDs(ctx context.Context, productID uuid.UUID, limit int) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCoPurchasedProductIDs", ctx, productID, limit)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCoPurchasedProductIDs indicates an expected call of GetCoPurchasedProductIDs.
+func (mr *MockIRecommendationRepositoryMockRecorder) GetCoPurchasedProductIDs(ctx, productID, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCoPurchasedProductIDs", reflect.TypeOf((*MockIRecommendationRepository)(nil).GetCoPurchasedProductIDs), ctx, productID, limit)
+}
+
+// GetPreferredSubcategoryIDs mocks base method.
+func (m *MockIRecommendationRepository) GetPreferredSubcategoryIDs(ctx context.Context, userID uuid.UUID, limit int) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPreferredSubcategoryIDs", ctx, userID, limit)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPreferredSubcategoryIDs indicates an expected call of GetPreferredSubcategoryIDs.
+func (mr *MockIRecommendationRepositoryMockRecorder) GetPreferredSubcategoryIDs(ctx, userID, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPreferredSubcategoryIDs", reflect.TypeOf((*MockIRecommendationRepository)(nil).GetPreferredSubcategoryIDs), ctx, userID, limit)
+}
+
+// GetPurchasedProductIDs mocks base method.
+func (m *MockIRecommendationRepository) GetPurchasedProductIDs(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPurchasedProductIDs", ctx, userID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPurchasedProductIDs indicates an expected call of GetPurchasedProductIDs.
+func (mr *MockIRecommendationRepositoryMockRecorder) GetPurchasedProductIDs(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPurchasedProductIDs", reflect.TypeOf((*MockIRecommendationRepository)(nil).GetPurchasedProductIDs), ctx, userID)
+}
+
+// GetPopularProductIDs mocks base method.
+func (m *MockIRecommendationRepository) GetPopularProductIDs(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPopularProductIDs", ctx, limit)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPopularProductIDs indicates an expected call of GetPopularProductIDs.
+func (mr *MockIRecommendationRepositoryMockRecorder) GetPopularProductIDs(ctx, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPopularProductIDs", reflect.TypeOf((*MockIRecommendationRepository)(nil).GetPopularProductIDs), ctx, limit)
+}
+
+// GetComplementaryProductIDs mocks base method.
+func (m *MockIRecommendationRepository) GetComplementaryProductIDs(ctx context.Context, purchasedIDs []uuid.UUID, limit int) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetComplementaryProductIDs", ctx, purchasedIDs, limit)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetComplementaryProductIDs indicates an expected call of GetComplementaryProductIDs.
+func (mr *MockIRecommendationRepositoryMockRecorder) GetComplementaryProductIDs(ctx, purchasedIDs, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComplementaryProductIDs", reflect.TypeOf((*MockIRecommendationRepository)(nil).GetComplementaryProductIDs), ctx, purchasedIDs, limit)
+}

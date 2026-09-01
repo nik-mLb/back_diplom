@@ -69,15 +69,6 @@ user_proto:
 		--go_opt=paths=source_relative \
 		proto/user.proto
 
-csat_proto:
-	@mkdir -p internal/transport/generated/csat && \
-	protoc --proto_path=proto \
-		--go_out=internal/transport/generated/csat \
-		--go-grpc_out=internal/transport/generated/csat \
-		--go-grpc_opt=paths=source_relative \
-		--go_opt=paths=source_relative \
-		proto/csat.proto
-
 review_proto:
 	@mkdir -p internal/transport/generated/review && \
 	protoc --proto_path=proto \
@@ -93,7 +84,6 @@ gen-easyjson:
 	easyjson -all internal/transport/dto/auth.go
 	easyjson -all internal/transport/dto/basket.go
 	easyjson -all internal/transport/dto/category.go
-	easyjson -all internal/transport/dto/csat.go
 	easyjson -all internal/transport/dto/minio.go
 	easyjson -all internal/transport/dto/notification.go
 	easyjson -all internal/transport/dto/order.go

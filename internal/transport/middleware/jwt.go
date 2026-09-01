@@ -13,6 +13,41 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// OptionalJWTMiddleware извлекает userID из токена, если он присутствует и валиден,
+// но НЕ отклоняет запрос при отсутствии/невалидности токена — просто пропускает
+// дальше без userID в контексте. Нужен для эндпоинтов, работающих и для гостя, и
+// для залогиненного пользователя (например, рекомендации на главной странице).
+func OptionalJWTMiddleware(authClient gen.AuthServiceClient, tokenator *jwt.Tokenator, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		cookieValue, err := r.Cookie(string(domains.TokenCookieName))
+		if err != nil || cookieValue.Value == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		tokenString := cookieValue.Value
+
+		checkResp, err := authClient.CheckToken(ctx, &gen.CheckTokenReq{Token: tokenString})
+		if err != nil || !checkResp.Valid {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		claims, err := tokenator.ParseJWT(tokenString)
+		if err != nil || claims.ExpiresAt < time.Now().Unix() {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		ctx = context.WithValue(ctx, domains.UserIDKey{}, claims.UserID)
+		ctx = context.WithValue(ctx, domains.RoleKey{}, claims.Role)
+		ctx = metadata.AppendToOutgoingContext(ctx, "user-id", claims.UserID, "role", claims.Role)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // JWTMiddleware проверяет наличие и валидность JWT-токена в куках
 func JWTMiddleware(authClient gen.AuthServiceClient, tokenator *jwt.Tokenator, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
