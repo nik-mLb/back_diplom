@@ -154,11 +154,9 @@ services:
       "
   
   user-service:
-    build:
-      context: .
-      dockerfile: deployments/user/Dockerfile
-    image: niknike/user-service
+    image: niknike/bazaar
     container_name: user_service
+    command: ["./user-service"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -185,11 +183,9 @@ services:
       - bazaar-network
 
   auth-service:
-    build:
-      context: .
-      dockerfile: deployments/auth/Dockerfile
-    image: niknike/auth-service
+    image: niknike/bazaar
     container_name: auth_service
+    command: ["./auth-service"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -222,11 +218,9 @@ services:
           - auth-service
   
   review-service:
-    build:
-      context: .
-      dockerfile: deployments/review/Dockerfile
-    image: niknike/review-service
+    image: niknike/bazaar
     container_name: review_service
+    command: ["./review-service"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
